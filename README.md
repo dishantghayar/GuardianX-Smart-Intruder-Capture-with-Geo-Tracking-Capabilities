@@ -1,0 +1,2 @@
+# GuardianX-Smart-Intruder-Capture-with-Geo-Tracking-Capabilities
+GuardianX :  is an advanced security solution designed to detect, capture, and track intruders using intelligent surveillance and real-time geo-location technology. The system combines AI-based detection, sensor monitoring, and GPS tracking to provide rapid alerts and accurate movement insights, making it ideal for home, office, and security.
